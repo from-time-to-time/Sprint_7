@@ -1,9 +1,8 @@
-import requests
 import random
 import string
 import pytest
-import config
 import allure
+from src.scooter_api import ScooterApi
 
 # метод регистрации нового курьера возвращает список из логина и пароля
 # если регистрация не удалась, возвращает пустой список
@@ -31,7 +30,8 @@ def register_new_courier_and_return_login_password():
     }
 
     # отправляем запрос на регистрацию курьера и сохраняем ответ в переменную response
-    response = requests.post('https://qa-scooter.praktikum-services.ru/api/v1/courier', data=payload)
+    api = ScooterApi()
+    response = api.create_courier(json=payload)
 
     # если регистрация прошла успешно (код ответа 201), добавляем в список логин и пароль курьера
     if response.status_code == 201:
@@ -55,26 +55,28 @@ def courier_payload_all():
 
 @pytest.fixture
 def cleanup_courier_required(courier_payload_required):
+    api = ScooterApi()
     yield
     creds = courier_payload_required
     with allure.step("Очищаем данные: логинимся и удаляем курьера"):
         try:
-            auth = requests.post(f"{config.BASE_URL}/api/v1/courier/login", json=creds, headers=config.headers)
+            auth = api.login_courier(json=creds)
             if auth.ok and "id" in auth.json():
                 cid = auth.json()["id"]
-                requests.delete(f"{config.BASE_URL}/api/v1/courier/{cid}", headers=config.headers)
+                api.delete_courier(cid)
         except Exception as e:
             print(f"[cleanup] failed for {creds['login']}: {e}")
 
 @pytest.fixture
 def cleanup_courier_all(courier_payload_all):
+    api = ScooterApi()
     yield
     creds = courier_payload_all
     with allure.step("Очищаем данные: логинимся и удаляем курьера"):
         try:
-            auth = requests.post(f"{config.BASE_URL}/api/v1/courier/login", json=creds, headers=config.headers)
+            auth = api.login_courier(creds)
             if auth.ok and "id" in auth.json():
                 cid = auth.json()["id"]
-                requests.delete(f"{config.BASE_URL}/api/v1/courier/{cid}", headers=config.headers)
+                api.delete_courier(cid)
         except Exception as e:
             print(f"[cleanup all] failed for {creds['login']}: {e}")

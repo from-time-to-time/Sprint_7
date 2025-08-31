@@ -14,7 +14,7 @@
 │
 ├── src/
 │   ├── __init__.py
-│   └── config.py                     # базовый URL и заголовки
+│   └── scooter_api.py                     # базовый URL, заголовки и методы
 │
 ├── tests/
 │   ├── conftest.py                   # фикстуры Pytest

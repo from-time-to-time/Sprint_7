@@ -1,13 +1,13 @@
-import requests
-from src import config
+from src.scooter_api import ScooterApi
 import allure
 
 
 class TestGetOrders:
     @allure.title('Проверка получения списка заказов')
     def test_get_list_of_orders(self):
+        api = ScooterApi()
         with allure.step('Отправляем GET-запрос для получения списка заказов'):
-            response = requests.get(f'{config.BASE_URL}/api/v1/orders', headers = config.headers)
+            response = api.get_orders()
         with allure.step('Проверяем, что вернулся статус 200 и список не пустой'):
             assert response.status_code == 200
             orders = response.json().get("orders")
